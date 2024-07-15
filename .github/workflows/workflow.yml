@@ -4,13 +4,28 @@ on:
   workflow_dispatch:
   push:
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 jobs:
   deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
       
     - name: Use Bun
       uses: oven-sh/setup-bun@v2
@@ -27,3 +42,11 @@ jobs:
         git push origin main
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+          path: '.'
+          
+    - name: Deploy to GitHub Pages
+      uses: actions/deploy-pages@v4
