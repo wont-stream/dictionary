@@ -1,0 +1,29 @@
+name: Daily Deploy
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Use Bun
+      uses: oven-sh/setup-bun@v2
+      
+    - name: Run script
+      run: bun index.js
+      
+    - name: Commit and push changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add index.min.json
+        git commit -m "Update index.min.json" || exit 0
+        git push origin main
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
